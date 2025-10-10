@@ -3,14 +3,6 @@ import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
 import {VariantSelector, RichText} from '@shopify/hydrogen';
 
-/**
- * @param {{
- *  product: any;
- *  selectedVariant: any;
- *  variants: any[];
- *  className?: string;
- * }}
- */
 export function ProductForm({product, selectedVariant, variants, className}) {
   const {open} = useAside();
 
@@ -80,6 +72,7 @@ export function ProductForm({product, selectedVariant, variants, className}) {
                 </div>
               </details>
             )}
+
             {product.sizingNotes?.value && (
               <details className="group py-6">
                 <summary className="flex items-center justify-between cursor-pointer list-none">
@@ -93,6 +86,7 @@ export function ProductForm({product, selectedVariant, variants, className}) {
                 </div>
               </details>
             )}
+
             {product.careInstructions?.value && (
               <details className="group py-6">
                 <summary className="flex items-center justify-between cursor-pointer list-none">
@@ -103,6 +97,20 @@ export function ProductForm({product, selectedVariant, variants, className}) {
                 </summary>
                 <div className="pt-4 prose font-source text-brand-navy/80">
                   <RichText data={product.careInstructions.value} />
+                </div>
+              </details>
+            )}
+
+            {product.colours?.value && (
+              <details className="group py-6">
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <h3 className="font-playfair text-lg text-brand-navy">
+                    Colours
+                  </h3>
+                  <span className="relative flex-shrink-0 ml-4 w-4 h-4">▼</span>
+                </summary>
+                <div className="pt-4 prose font-source text-brand-navy/80">
+                  <p>{product.colours.value}</p>
                 </div>
               </details>
             )}

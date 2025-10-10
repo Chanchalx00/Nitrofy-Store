@@ -65,7 +65,7 @@ export function CartLineItem({layout, line}) {
         <div className="mt-4 flex items-center justify-between">
           <CartLineQuantityAdjustor line={line} />
           <div className="font-source font-medium">
-            <ProductPrice price={line.cost.totalAmount} />
+            <ProductPrice price={line?.cost?.totalAmount} />
           </div>
         </div>
       </div>

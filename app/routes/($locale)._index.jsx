@@ -8,7 +8,7 @@ import {ArrowRight,Star} from 'lucide-react';
  * @type {MetaFunction}
  */
 export const meta = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [{title: 'Nitrofy | Home'}];
 };
 
 /**
@@ -71,7 +71,7 @@ export default function Homepage() {
           alt="Products"
           className="absolute inset-0 w-full object-cover opacity-70"
           loading="eager"
-          sizes="(max-width:1200px)50vw,33vw"
+                sizes='(max-width:768px) 100vw,(max-width:1200px)50vw,33vw'
           data={{url: '/image/products.jpg', width: 1920, height: 1080}}
         />
         <div className="relative container mx-auto px-4 h-full flex items-center">
@@ -123,7 +123,7 @@ export default function Homepage() {
                         key={product.id}
                         product={product}
                         loading="lazy"
-                        hidePrice
+                        
                       />
                     ))}
                   </div>

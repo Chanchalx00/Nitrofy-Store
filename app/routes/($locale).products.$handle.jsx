@@ -4,7 +4,6 @@ import {
   getSelectedProductOptions,
   Analytics,
   useOptimisticVariant,
-  getProductOptions,
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
 } from '@shopify/hydrogen';
@@ -221,6 +220,23 @@ fragment Product on Product {
   }
   adjacentVariants(selectedOptions: $selectedOptions) {
     ...ProductVariant
+  }
+
+  #Added metafields
+  materials: metafield(namespace: "custom", key: "materials") {
+    value
+  }
+  construction: metafield(namespace: "custom", key: "construction") {
+    value
+  }
+  sizingNotes: metafield(namespace: "custom", key: "sizing_notes") {
+    value
+  }
+  careInstructions: metafield(namespace: "custom", key: "care_instructions") {
+    value
+  }
+  colours: metafield(namespace: "custom", key: "colours") {
+    value
   }
 }
 `;

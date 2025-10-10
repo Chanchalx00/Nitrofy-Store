@@ -30,7 +30,7 @@ export function ProductPrice({price, compareAtPrice,className}) {
     <div className={`product-price ${className}`}>
       {hasDiscount ? (
         <div className="flex items-center gap-2">
-          <span className="text-red-600 font-semibold text-lg">
+          <span className="text-brand-gold font-semibold text-lg">
             <Money data={price} />
           </span>
           <s className="text-gray-500 text-sm">
@@ -41,7 +41,7 @@ export function ProductPrice({price, compareAtPrice,className}) {
           </span>
         </div>
       ) : isValidMoney(price) ? (
-        <span className="text-red-600 font-semibold text-lg">
+        <span className="text-brand-gold font-semibold text-lg">
           <Money data={price} />
         </span>
       ) : (

@@ -18,6 +18,7 @@ import {X} from 'lucide-react';
 export function Aside({children, heading, type}) {
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
+  
   useEffect(() => {
     if (!expanded) {
       return;

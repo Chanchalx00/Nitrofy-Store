@@ -97,21 +97,7 @@ const image = product?.featuredImage;
             <ArrowRight className="ml-1 w-4 h-4" />
           </span>
 
-          {/* {hasDiscount ? (
-            <>
-              <Money data={price} className="text-brand-navy font-semibold" />
-              <s className="text-gray-500">
-                <Money data={compareAtPrice} />
-              </s>
-              <span className="font-source text-brand-gold font-medium text-xs">
-                ({discountPercent}% OFF)
-              </span>
-            </>
-          ) : hasValidPrice ? (
-            <Money data={price} className="text-black font-semibold" />
-          ) : (
-            <span className="text-gray-400 text-sm">No price</span>
-          )} */}
+          
         </div>
       </div>
     </Link>

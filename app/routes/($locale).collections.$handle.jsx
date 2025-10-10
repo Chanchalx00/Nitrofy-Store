@@ -136,6 +136,14 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
       maxVariantPrice {
         ...MoneyProductItem
       }
+        variants(first:1){
+        nodes{
+        selectedOptions{
+        name
+        value
+        }
+        }
+        }
     }
   }
 `;

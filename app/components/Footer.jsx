@@ -131,7 +131,7 @@ export function Footer({footer: footerPromise, header, publicStoreDomain}) {
                     </li>
                     <li className="flex items-start space-x-3">
                       <NavLink
-                        to="/pages/about-us"
+                        to="/pages/our-product"
                         className="text-gray-300 hover:text-brand-gold transition-colors duration-300"
                       >
                         About Us

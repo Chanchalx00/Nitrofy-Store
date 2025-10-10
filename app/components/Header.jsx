@@ -125,7 +125,7 @@ export function HeaderMenu({
   const baseClassName =
     "transition-all duration-200 hover:text-brand-gold font-source relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px] after:bg-brand-gold after:transition-all after:duration-200 hover:after:w-full";
   const desktopClassName =
-    'flex item-center justify-center space-x-12 text-sm uppercase tracking-wider';
+    'flex justify-center items-center pt-2 space-x-12 text-sm uppercase tracking-wider';
   const mobileClassName = 'flex flex-col px-6 ';
 
   return (
@@ -207,8 +207,7 @@ export function HeaderMenu({
               key={item.id}
               onClick={close}
               prefetch="intent"
-              to={url}
-            >
+              to={url}            >
               {item.title}
             </NavLink>
           );
@@ -229,7 +228,7 @@ function HeaderCtas({isLoggedIn, cart}) {
       <SearchToggle />
       <NavLink
         prefetch="intent"
-        to="/cart"
+        to="/account"
         className='text-brand-navy hover:text-brand-gold transition-all duration-200 relative p-2 after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1px] after:bg-brand-gold after:transition-all after:duration-200 hover:after:w-full'
       >
         <span className="sr-only">Account</span>
