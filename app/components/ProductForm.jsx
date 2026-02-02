@@ -1,149 +1,151 @@
-import {Link, useNavigate} from 'react-router';
+import {Link} from 'react-router';
 import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
+import {VariantSelector, RichText} from '@shopify/hydrogen';
 
-/**
- * @param {{
- *   productOptions: MappedProductOptions[];
- *   selectedVariant: ProductFragment['selectedOrFirstAvailableVariant'];
- * }}
- */
-export function ProductForm({productOptions, selectedVariant}) {
-  const navigate = useNavigate();
+export function ProductForm({product, selectedVariant, variants, className}) {
   const {open} = useAside();
+
   return (
-    <div className="product-form">
-      {productOptions.map((option) => {
-        // If there is only a single value in the option values, don't display the option
-        if (option.optionValues.length === 1) return null;
+    <div className={`flex flex-col ${className}`}>
+      <div className="space-y-8">
+        {/* Variant Options */}
+        <VariantSelector
+          handle={product.handle}
+          options={product.options.filter(
+            (option) => option.optionValues.length > 1,
+          )}
+          variants={variants}
+        >
+          {({option}) => <ProductOptions key={option.name} option={option} />}
+        </VariantSelector>
 
-        return (
-          <div className="product-options" key={option.name}>
-            <h5>{option.name}</h5>
-            <div className="product-options-grid">
-              {option.optionValues.map((value) => {
-                const {
-                  name,
-                  handle,
-                  variantUriQuery,
-                  selected,
-                  available,
-                  exists,
-                  isDifferentProduct,
-                  swatch,
-                } = value;
-
-                if (isDifferentProduct) {
-                  // SEO
-                  // When the variant is a combined listing child product
-                  // that leads to a different url, we need to render it
-                  // as an anchor tag
-                  return (
-                    <Link
-                      className="product-options-item"
-                      key={option.name + name}
-                      prefetch="intent"
-                      preventScrollReset
-                      replace
-                      to={`/products/${handle}?${variantUriQuery}`}
-                      style={{
-                        border: selected
-                          ? '1px solid black'
-                          : '1px solid transparent',
-                        opacity: available ? 1 : 0.3,
-                      }}
-                    >
-                      <ProductOptionSwatch swatch={swatch} name={name} />
-                    </Link>
-                  );
-                } else {
-                  // SEO
-                  // When the variant is an update to the search param,
-                  // render it as a button with javascript navigating to
-                  // the variant so that SEO bots do not index these as
-                  // duplicated links
-                  return (
-                    <button
-                      type="button"
-                      className={`product-options-item${
-                        exists && !selected ? ' link' : ''
-                      }`}
-                      key={option.name + name}
-                      style={{
-                        border: selected
-                          ? '1px solid black'
-                          : '1px solid transparent',
-                        opacity: available ? 1 : 0.3,
-                      }}
-                      disabled={!exists}
-                      onClick={() => {
-                        if (!selected) {
-                          navigate(`?${variantUriQuery}`, {
-                            replace: true,
-                            preventScrollReset: true,
-                          });
-                        }
-                      }}
-                    >
-                      <ProductOptionSwatch swatch={swatch} name={name} />
-                    </button>
-                  );
-                }
-              })}
+        {/* Add to cart */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-source text-brand-navy/60">
+              {selectedVariant?.availableForSale
+                ? 'Ready to ship'
+                : 'Currently unavailable'}
             </div>
-            <br />
+            {selectedVariant?.sku && (
+              <div className="text-sm font-source text-brand-navy/60">
+                SKU: {selectedVariant.sku}
+              </div>
+            )}
           </div>
-        );
-      })}
-      <AddToCartButton
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
-        onClick={() => {
-          open('cart');
-        }}
-        lines={
-          selectedVariant
-            ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                  selectedVariant,
-                },
-              ]
-            : []
-        }
-      >
-        {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
-      </AddToCartButton>
+
+          <AddToCartButton
+            disabled={!selectedVariant || !selectedVariant.availableForSale}
+            afterAddToCart={() => open('cart')}
+            lines={
+              selectedVariant
+                ? [{merchandiseId: selectedVariant.id, quantity: 1}]
+                : []
+            }
+          >
+            {selectedVariant?.availableForSale ? 'Add to Cart' : 'Sold Out'}
+          </AddToCartButton>
+        </div>
+
+        {/* Product details */}
+        <div className="mt-12 border-t border-brand-navy/10">
+          <div className="grid grid-cols-1 divide-y divide-brand-navy/10">
+            {product.materials?.value && (
+              <details className="group py-6">
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <h3 className="font-playfair text-lg text-brand-navy">
+                    Materials & Construction
+                  </h3>
+                  <span className="relative flex-shrink-0 ml-4 w-4 h-4">▼</span>
+                </summary>
+                <div className="pt-4 prose font-source text-brand-navy/80">
+                  <RichText data={product.materials.value} />
+                  {product.construction?.value && (
+                    <div className="mt-4">
+                      <h4 className="font-playfair text-base text-brand-navy">
+                        Construction
+                      </h4>
+                      <p>{product.construction.value}</p>
+                    </div>
+                  )}
+                </div>
+              </details>
+            )}
+
+            {product.sizingNotes?.value && (
+              <details className="group py-6">
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <h3 className="font-playfair text-lg text-brand-navy">
+                    Size & Fit
+                  </h3>
+                  <span className="relative flex-shrink-0 ml-4 w-4 h-4">▼</span>
+                </summary>
+                <div className="pt-4 prose font-source text-brand-navy/80">
+                  <p>{product.sizingNotes.value}</p>
+                </div>
+              </details>
+            )}
+
+            {product.careInstructions?.value && (
+              <details className="group py-6">
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <h3 className="font-playfair text-lg text-brand-navy">
+                    Care Guide
+                  </h3>
+                  <span className="relative flex-shrink-0 ml-4 w-4 h-4">▼</span>
+                </summary>
+                <div className="pt-4 prose font-source text-brand-navy/80">
+                  <RichText data={product.careInstructions.value} />
+                </div>
+              </details>
+            )}
+
+            {product.colours?.value && (
+              <details className="group py-6">
+                <summary className="flex items-center justify-between cursor-pointer list-none">
+                  <h3 className="font-playfair text-lg text-brand-navy">
+                    Colours
+                  </h3>
+                  <span className="relative flex-shrink-0 ml-4 w-4 h-4">▼</span>
+                </summary>
+                <div className="pt-4 prose font-source text-brand-navy/80">
+                  <p>{product.colours.value}</p>
+                </div>
+              </details>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-/**
- * @param {{
- *   swatch?: Maybe<ProductOptionValueSwatch> | undefined;
- *   name: string;
- * }}
- */
-function ProductOptionSwatch({swatch, name}) {
-  const image = swatch?.image?.previewImage?.url;
-  const color = swatch?.color;
-
-  if (!image && !color) return name;
-
+function ProductOptions({option}) {
   return (
-    <div
-      aria-label={name}
-      className="product-option-label-swatch"
-      style={{
-        backgroundColor: color || 'transparent',
-      }}
-    >
-      {!!image && <img src={image} alt={name} />}
+    <div className="product-options">
+      <h5>{option.name}</h5>
+      <div className="product-options-grid flex flex-wrap gap-5">
+        {option.values.map(({value, isAvailable, isActive, to}) => (
+          <Link
+            key={option.name + value}
+            prefetch="intent"
+            preventScrollReset
+            replace
+            to={to}
+            className={`
+    px-4 py-2 text-sm font-source
+    border transition rounded-full
+    ${isActive ? 'border-brand-navy border-2' : 'border-brand-navy/40'}
+    ${isAvailable ? 'opacity-100' : 'opacity-40 pointer-events-none'}
+    hover:border-brand-navy
+  `}
+          
+          >
+            {value}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
-
-/** @typedef {import('@shopify/hydrogen').MappedProductOptions} MappedProductOptions */
-/** @typedef {import('@shopify/hydrogen/storefront-api-types').Maybe} Maybe */
-/** @typedef {import('@shopify/hydrogen/storefront-api-types').ProductOptionValueSwatch} ProductOptionValueSwatch */
-/** @typedef {import('storefrontapi.generated').ProductFragment} ProductFragment */

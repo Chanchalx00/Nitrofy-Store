@@ -3,6 +3,9 @@ import {useVariantUrl} from '~/lib/variants';
 import {Link} from 'react-router';
 import {ProductPrice} from './ProductPrice';
 import {useAside} from './Aside';
+import {Feather, Loader2, Minus, Plus, X} from 'lucide-react';
+import {useEffect, useState} from 'react';
+
 
 /**
  * A single line item in the cart. It displays the product image, title, price.
@@ -19,45 +22,54 @@ export function CartLineItem({layout, line}) {
   const {close} = useAside();
 
   return (
-    <li key={id} className="cart-line">
-      {image && (
-        <Image
-          alt={title}
-          aspectRatio="1/1"
-          data={image}
-          height={100}
-          loading="lazy"
-          width={100}
-        />
-      )}
-
-      <div>
-        <Link
-          prefetch="intent"
-          to={lineItemUrl}
-          onClick={() => {
-            if (layout === 'aside') {
-              close();
-            }
-          }}
-        >
-          <p>
-            <strong>{product.title}</strong>
-          </p>
-        </Link>
-        <ProductPrice price={line?.cost?.totalAmount} />
-        <ul>
-          {selectedOptions.map((option) => (
-            <li key={option.name}>
-              <small>
-                {option.name}: {option.value}
-              </small>
-            </li>
-          ))}
-        </ul>
-        <CartLineQuantity line={line} />
+    <div className="flex gap-4 py-6 border-b border-gray-100">
+      {/* Image */}
+      <div className="relative w-24 h-24 bg-gray-50 rounded-lg overflow-hidden">
+        {image && (
+          <Image
+            alt={title}
+            aspectRatio="1/1"
+            data={image}
+            loading="lazy"
+            className="object-cover w-full h-full"
+            sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
+          />
+        )}
       </div>
-    </li>
+      {/* Product details*/}
+
+      <div className="flex-1 min-w-0">
+        <Link
+          to={lineItemUrl}
+          onClick={close}
+          prefetch="intent"
+          className="block"
+        >
+          {' '}
+          <h3 className="font-playfair text-base text-brand-navy mb-1 truncate">
+            {product.title}
+          </h3>
+        </Link>
+        {/** Product options */}
+        <div className="mt-1 space-y-1">
+          {selectedOptions.map((option) => (
+            <p
+              key={`${product.id}-${option.name}`}
+              className="font-source text-sm text-gray-500"
+            >
+              {option.name}: {option.value}
+            </p>
+          ))}
+        </div>
+        {/* Price */}
+        <div className="mt-4 flex items-center justify-between">
+          <CartLineQuantityAdjustor line={line} />
+          <div className="font-source font-medium">
+            <ProductPrice price={line?.cost?.totalAmount} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -67,38 +79,41 @@ export function CartLineItem({layout, line}) {
  * hasn't yet responded that it was successfully added to the cart.
  * @param {{line: CartLine}}
  */
-function CartLineQuantity({line}) {
+function CartLineQuantityAdjustor({line}) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity, isOptimistic} = line;
   const prevQuantity = Number(Math.max(0, quantity - 1).toFixed(0));
   const nextQuantity = Number((quantity + 1).toFixed(0));
 
   return (
-    <div className="cart-line-quantity">
-      <small>Quantity: {quantity} &nbsp;&nbsp;</small>
+    <div className="flex items-center gap-2">
       <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
         <button
-          aria-label="Decrease quantity"
-          disabled={quantity <= 1 || !!isOptimistic}
-          name="decrease-quantity"
-          value={prevQuantity}
+          disabled={quantity <= 1}
+          className={`w-8 h-8 flex items-center justify-center rounded border transition-colors ${
+            quantity <= 1
+              ? 'border-gray-200 text-gray-300'
+              : 'border-gray-200 hover:border-gray-400 text-gray-500'
+          }`}
         >
-          <span>&#8722; </span>
+          <Minus className="w-4 h-4" />
         </button>
       </CartLineUpdateButton>
-      &nbsp;
+      <span className="font-source w-8 text-center">{quantity}</span>
       <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
         <button
-          aria-label="Increase quantity"
-          name="increase-quantity"
-          value={nextQuantity}
-          disabled={!!isOptimistic}
+          className={`w-8 h-8 flex items-center justify-center rounded border transition-colors
+          border-gray-200  hover:border-gray-400 text-gray-500'
+          }`}
         >
-          <span>&#43;</span>
+          <Plus className="w-4 h-4" />
         </button>
       </CartLineUpdateButton>
-      &nbsp;
-      <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
+
+      <CartLineRemoveButton
+        lineIds={[lineId]}
+        disabled={isOptimistic === true}
+      />
     </div>
   );
 }
@@ -115,13 +130,15 @@ function CartLineQuantity({line}) {
 function CartLineRemoveButton({lineIds, disabled}) {
   return (
     <CartForm
-      fetcherKey={getUpdateKey(lineIds)}
       route="/cart"
       action={CartForm.ACTIONS.LinesRemove}
       inputs={{lineIds}}
     >
-      <button disabled={disabled} type="submit">
-        Remove
+      <button
+        disabled={disabled}
+        className={`ml-3 text-gray-400 hover:text-gray-500 transition-colors ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
+      >
+        <X className="w-4 h-4" />
       </button>
     </CartForm>
   );
@@ -134,16 +151,34 @@ function CartLineRemoveButton({lineIds, disabled}) {
  * }}
  */
 function CartLineUpdateButton({children, lines}) {
-  const lineIds = lines.map((line) => line.id);
+  const [updating, setUpdating] = useState(false);
 
   return (
     <CartForm
-      fetcherKey={getUpdateKey(lineIds)}
       route="/cart"
       action={CartForm.ACTIONS.LinesUpdate}
       inputs={{lines}}
     >
-      {children}
+      {(fetcher) => {
+        useEffect(() => {
+          if (fetcher.state === 'loading') {
+            setUpdating(true);
+          } else if (fetcher.state === 'idle') {
+            setTimeout(() => setUpdating(false), 200);
+          }
+        }, [fetcher.state]);
+        if (updating) {
+          return (
+            <div className="relative inline-flex items-center justify-center ">
+              <div className="opacity-50 pointer-events-none">{children}</div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="w-4 h-4 animate-spin text-brand-gold" />
+              </div>
+            </div>
+          );
+        }
+        return children;
+      }}
     </CartForm>
   );
 }

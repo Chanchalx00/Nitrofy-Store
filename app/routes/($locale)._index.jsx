@@ -2,12 +2,13 @@ import {Await, useLoaderData, Link} from 'react-router';
 import {Suspense} from 'react';
 import {Image} from '@shopify/hydrogen';
 import {ProductItem} from '~/components/ProductItem';
+import {ArrowRight,Star} from 'lucide-react';
 
 /**
  * @type {MetaFunction}
  */
 export const meta = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [{title: 'Nitrofy | Home'}];
 };
 
 /**
@@ -64,8 +65,119 @@ export default function Homepage() {
   const data = useLoaderData();
   return (
     <div className="home">
-      <FeaturedCollection collection={data.featuredCollection} />
-      <RecommendedProducts products={data.recommendedProducts} />
+      {/* Hero Section */}
+      <section className="relative h-screen min-h-[600px] bg-brand-navy">
+        <Image
+          alt="Products"
+          className="absolute inset-0 w-full h-full object-cover opacity-70"
+          loading="eager"
+                sizes='(max-width:768px) 100vw,(max-width:1200px)50vw,33vw'
+          data={{url: '/image/products.jpg', width: 1920, height: 1080}}
+        />
+        <div className="relative container mx-auto px-4 h-full flex items-center">
+          <div className="max-w-2xl ">
+            <h1 className="font-playfair text-4xl md:text-6xl text-white mb-6">
+              Shop Smarter, Live Better
+            </h1>
+            <p className="font-source text-lg text-gray-200 mb-8">
+              Discover premium products at unbeatable prices.
+            </p>
+            <Link
+              to="/collections/all"
+              className="inline-flex items-center px-8 py-4 bg-brand-gold hover:bg-brand-goldDark transition-colors duration-300 text-white font-source font-medium"
+            >
+              Explore Collection
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+      {/* Recommended Product */}
+      <section className="py-20 px-4 bg-white">
+        <div className="container mx-auto ">
+          <h2 className="font-playfair text-3xl text-center mb-12">
+            Our Latest Products
+          </h2>
+          <div>
+            <Suspense
+              fallback={
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {Array.from({length: 4}).map((_, i) => (
+                    <div
+                      key={`skeleton-${i}`}
+                      className="flex flex-wrap gap-4 animate-pulse"
+                    >
+                      <div className="h-20 bg-gray-200 rounded w-20" />
+                      <div className="h-20 bg-gray-200 rounded w-20" />
+                      <div className="h-20 bg-gray-200 rounded w-20" />
+                    </div>
+                  ))}
+                </div>
+              }
+            >
+              <Await resolve={data.recommendedProducts}>
+                {(response) => (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {response?.products.nodes.map((product) => (
+                      <ProductItem
+                        key={product.id}
+                        product={product}
+                        loading="lazy"
+                        
+                      />
+                    ))}
+                  </div>
+                )}
+              </Await>
+            </Suspense>
+          </div>
+        </div>
+      </section>
+      {/* Products */}
+      <section className="py-20 px-4 ">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <Image
+                alt="product2"
+                className="w-full"
+                data={{url: '/image/beauty-products.jpg'}}
+                sizes='(max-width:768px) 100vw,(max-width:1200px)50vw,33vw'
+                loading='lazy'
+              />
+            </div>
+            <div className='max-w-xl'>
+              <h2 className='font-playfair text-3xl mb-6'>Products by Nitrofy</h2>
+            <p className='font-source text-gray-600 mb-8 leading-relaxed'>
+              Lorem ipsum dolor sit amet consectetur, adipisicing elit. Fuga ullam voluptas repudiandae expedita illo excepturi quas nemo quo alias ex itaque molestiae, sit voluptates consequuntur temporibus necessitatibus earum? Deserunt, iusto.
+            </p>
+            <Link to='/pages/our-product' className='inline-flex items-center font-source font-medium text-brand-navy hover:text-brand-gold transition-colors duration-300'>
+            Discover Our Process
+            <ArrowRight className='ml-2 w-5 h-5'/>
+            </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* Testimonial */}
+      <section className='py-20 px-4 bg-brand-navy text-white'> <div className='container mx-auto max-w-4xl text-center'>
+        <div className='flex justify-center'>
+          {Array.from({length: 5}).map((_, i) => (
+            <Star
+              key={`start-${i}`}
+              fill='#C3A343'
+              color='#C3A343'
+              className='w-8 h-8 mb-8'
+            />
+          ))}
+        </div>
+        <blockquote className='font-playfair text-2xl md:text-3xl mb-8'>
+          " Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorem perferendis cumque hic, fugit alias expedita qui similique dolor quidem deleniti placeat laudantium, maxime recusandae repellendus suscipit? Aliquid fuga mollitia autem! "
+        </blockquote>
+        <cite className='font-source text-gray-300 not-italic'>
+          - The Luxuary Report
+        </cite>
+        </div></section>
     </div>
   );
 }
@@ -101,7 +213,9 @@ function FeaturedCollection({collection}) {
 function RecommendedProducts({products}) {
   return (
     <div className="recommended-products">
-      <h2>Recommended Products</h2>
+      <h2 className="text-brand-gold font-playfair font-bold text-2xl">
+        Recommended Products
+      </h2>
       <Suspense fallback={<div>Loading...</div>}>
         <Await resolve={products}>
           {(response) => (
@@ -153,18 +267,46 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
         amount
         currencyCode
       }
-    }
+      maxVariantPrice {
+        amount
+        currencyCode
+      }}
     featuredImage {
       id
       url
       altText
       width
       height
+      }
+      images(first:2) {
+       nodes{
+        id
+        url
+        altText
+        width
+        height
+}}
+    variants(first: 1) {
+      nodes {
+        selectedOptions{
+        name
+        value
+        }
+        price {
+          amount
+          currencyCode
+        }
+        compareAtPrice {
+          amount
+          currencyCode
+        }
+      }
     }
   }
+
   query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
     @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
+    products(first: 3, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...RecommendedProduct
       }

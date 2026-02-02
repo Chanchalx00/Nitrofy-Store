@@ -6,20 +6,11 @@ import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
  * @param {LoaderFunctionArgs} args
  */
 export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
-
   return {...deferredData, ...criticalData};
 }
 
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- * @param {LoaderFunctionArgs}
- */
 async function loadCriticalData({context, request}) {
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 4,
@@ -29,19 +20,12 @@ async function loadCriticalData({context, request}) {
     context.storefront.query(COLLECTIONS_QUERY, {
       variables: paginationVariables,
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
 
   return {collections};
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {LoaderFunctionArgs}
- */
-function loadDeferredData({context}) {
+function loadDeferredData() {
   return {};
 }
 
@@ -50,20 +34,74 @@ export default function Collections() {
   const {collections} = useLoaderData();
 
   return (
-    <div className="collections">
-      <h1>Collections</h1>
+    <div className="collections min-h-screen">
       <PaginatedResourceSection
         connection={collections}
-        resourcesClassName="collections-grid"
+        resourcesClassName="collections-grid mt-48"
       >
         {({node: collection, index}) => (
           <CollectionItem
             key={collection.id}
             collection={collection}
-            index={index}
+            index={index} 
           />
         )}
       </PaginatedResourceSection>
+
+      <style>{`
+        .collections {
+          padding: 1rem;
+
+        }
+
+        .collections h1 {
+          text-align: center;
+          margin-bottom: 2rem;
+        }
+
+        .collections-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1.5rem;
+        }
+
+        .collection-item {
+          display: flex;
+          flex-direction: column;
+          text-decoration: none;
+          color: inherit;
+          transition: transform 0.2s ease;
+        }
+
+        .collection-item:hover {
+          transform: translateY(-4px);
+        }
+
+        .collection-item h5 {
+          margin-top: 0.5rem;
+          text-align: center;
+          font-size: 1rem;
+        }
+
+        .collection-item img {
+          width: 100%;
+          height: auto;
+          object-fit: cover;
+          border-radius: 8px;
+        }
+
+        @media (min-width: 640px) {
+          .collection-item h5 {
+            font-size: 1.1rem;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .collection-item h5 {
+            font-size: 1.2rem;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -78,7 +116,6 @@ function CollectionItem({collection, index}) {
   return (
     <Link
       className="collection-item"
-      key={collection.id}
       to={`/collections/${collection.handle}`}
       prefetch="intent"
     >
