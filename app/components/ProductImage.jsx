@@ -107,7 +107,7 @@ const ProductImage = ({selectedVariantImage, images}) => {
         {/* Main Image Container */}
         <div
           className="aspect-square relative rounded-lg overflow-hidden bg-brand-cream cursor-zoom-in"
-          onClick={() => !isDragging && openModal(selectedIndex)}
+          // onClick={() => !isDragging && openModal(selectedIndex)}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}

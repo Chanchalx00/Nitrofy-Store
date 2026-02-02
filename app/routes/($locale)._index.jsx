@@ -69,7 +69,7 @@ export default function Homepage() {
       <section className="relative h-screen min-h-[600px] bg-brand-navy">
         <Image
           alt="Products"
-          className="absolute inset-0 w-full object-cover opacity-70"
+          className="absolute inset-0 w-full h-full object-cover opacity-70"
           loading="eager"
                 sizes='(max-width:768px) 100vw,(max-width:1200px)50vw,33vw'
           data={{url: '/image/products.jpg', width: 1920, height: 1080}}

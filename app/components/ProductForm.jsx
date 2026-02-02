@@ -125,7 +125,7 @@ function ProductOptions({option}) {
   return (
     <div className="product-options">
       <h5>{option.name}</h5>
-      <div className="product-options-grid">
+      <div className="product-options-grid flex flex-wrap gap-5">
         {option.values.map(({value, isAvailable, isActive, to}) => (
           <Link
             key={option.name + value}
@@ -133,10 +133,14 @@ function ProductOptions({option}) {
             preventScrollReset
             replace
             to={to}
-            style={{
-              border: isActive ? '2px solid black' : '1px solid black',
-              opacity: isAvailable ? 1 : 0.3,
-            }}
+            className={`
+    px-4 py-2 text-sm font-source
+    border transition rounded-full
+    ${isActive ? 'border-brand-navy border-2' : 'border-brand-navy/40'}
+    ${isAvailable ? 'opacity-100' : 'opacity-40 pointer-events-none'}
+    hover:border-brand-navy
+  `}
+          
           >
             {value}
           </Link>

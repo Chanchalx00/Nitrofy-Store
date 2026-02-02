@@ -2,84 +2,41 @@ import {redirect} from '@shopify/remix-oxygen';
 import {useLoaderData} from 'react-router';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
-import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
 
-/**
- * @type {MetaFunction<typeof loader>}
- */
-export const meta = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
-};
-
-/**
- * @param {LoaderFunctionArgs} args
- */
-export async function loader(args) {
-  // Start fetching non-critical data without blocking time to first byte
-  const deferredData = loadDeferredData(args);
-
-  // Await the critical data required to render initial state of the page
-  const criticalData = await loadCriticalData(args);
-
-  return {...deferredData, ...criticalData};
-}
-
-/**
- * Load data necessary for rendering content above the fold. This is the critical data
- * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
- * @param {LoaderFunctionArgs}
- */
-async function loadCriticalData({context, params, request}) {
+export async function loader({context, params, request}) {
   const {handle} = params;
-  const {storefront} = context;
-  const paginationVariables = getPaginationVariables(request, {
-    pageBy: 8,
-  });
 
   if (!handle) {
     throw redirect('/collections');
   }
 
-  const [{collection}] = await Promise.all([
-    storefront.query(COLLECTION_QUERY, {
-      variables: {handle, ...paginationVariables},
-      // Add other queries here, so that they are loaded in parallel
-    }),
-  ]);
+  const paginationVariables = getPaginationVariables(request, {
+    pageBy: 8,
+  });
+
+  const {storefront} = context;
+
+  const {collection} = await storefront.query(COLLECTION_QUERY, {
+    variables: {handle, ...paginationVariables},
+  });
 
   if (!collection) {
-    throw new Response(`Collection ${handle} not found`, {
-      status: 404,
-    });
+    throw new Response('Collection not found', {status: 404});
   }
 
-  // The API handle might be localized, so redirect to the localized handle
-  redirectIfHandleIsLocalized(request, {handle, data: collection});
-
-  return {
-    collection,
-  };
+  return {collection};
 }
 
-/**
- * Load data for rendering content below the fold. This data is deferred and will be
- * fetched after the initial page load. If it's unavailable, the page should still 200.
- * Make sure to not throw any errors here, as it will cause the page to 500.
- * @param {LoaderFunctionArgs}
- */
-function loadDeferredData({context}) {
-  return {};
-}
-
-export default function Collection() {
-  /** @type {LoaderReturnData} */
+export default function CollectionPage() {
   const {collection} = useLoaderData();
 
   return (
-    <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
+    <div className="collection min-h-screen">
+      <header className="collection-header mt-36">
+        <h1>{collection.title}</h1>
+      </header>
+
       <PaginatedResourceSection
         connection={collection.products}
         resourcesClassName="products-grid"
@@ -92,6 +49,7 @@ export default function Collection() {
           />
         )}
       </PaginatedResourceSection>
+
       <Analytics.CollectionView
         data={{
           collection: {
@@ -100,35 +58,85 @@ export default function Collection() {
           },
         }}
       />
+
+      <style >{`
+        .collection {
+          padding: 1rem;
+          
+          
+        }
+
+        .collection-header {
+          text-align: center;
+          margin-bottom: 2rem;
+        }
+
+        .collection-header h1 {
+          font-size: 1.5rem;
+        }
+
+        .products-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+          gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+          .collection {
+            padding: 2rem;
+          }
+
+          .collection-header h1 {
+            font-size: 2rem;
+          }
+
+          .products-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .collection-header h1 {
+            font-size: 2.25rem;
+          }
+
+          .products-grid {
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          }
+        }
+      `}</style>
     </div>
   );
 }
+
+/* ------------------ GRAPHQL ------------------ */
 
 const PRODUCT_ITEM_FRAGMENT = `#graphql
   fragment MoneyProductItem on MoneyV2 {
     amount
     currencyCode
   }
-  fragment ProductItem on Product {
+  fragment CollectionProductItem on Product {
     id
     handle
     title
     featuredImage {
+      id
+      url
+      altText
+      width
+      height
+    }
+      images(first: 2) {
+    nodes {
       id
       altText
       url
       width
       height
     }
-      images(first:10){
-      nodes{
-      id
-      altText
-      url
-      width
-      height
-      }
-      }
+  }
     priceRange {
       minVariantPrice {
         ...MoneyProductItem
@@ -136,19 +144,10 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
       maxVariantPrice {
         ...MoneyProductItem
       }
-        variants(first:1){
-        nodes{
-        selectedOptions{
-        name
-        value
-        }
-        }
-        }
     }
   }
 `;
 
-// NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
 const COLLECTION_QUERY = `#graphql
   ${PRODUCT_ITEM_FRAGMENT}
   query Collection(
@@ -164,27 +163,22 @@ const COLLECTION_QUERY = `#graphql
       id
       handle
       title
-      description
       products(
-        first: $first,
-        last: $last,
-        before: $startCursor,
+        first: $first
+        last: $last
+        before: $startCursor
         after: $endCursor
       ) {
         nodes {
-          ...ProductItem
+          ...CollectionProductItem
         }
         pageInfo {
-          hasPreviousPage
           hasNextPage
-          endCursor
+          hasPreviousPage
           startCursor
+          endCursor
         }
       }
     }
   }
 `;
-
-/** @typedef {import('@shopify/remix-oxygen').LoaderFunctionArgs} LoaderFunctionArgs */
-/** @template T @typedef {import('react-router').MetaFunction<T>} MetaFunction */
-/** @typedef {import('@shopify/remix-oxygen').SerializeFrom<typeof loader>} LoaderReturnData */
