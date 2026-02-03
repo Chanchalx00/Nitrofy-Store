@@ -26,6 +26,7 @@ export function PageLayout({
       <CartAside cart={cart} />
       <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
+
       {header && (
         <Header
           header={header}
@@ -34,7 +35,9 @@ export function PageLayout({
           publicStoreDomain={publicStoreDomain}
         />
       )}
+
       <main>{children}</main>
+
       <Footer
         footer={footer}
         header={header}
@@ -44,44 +47,56 @@ export function PageLayout({
   );
 }
 
-/**
- * @param {{cart: PageLayoutProps['cart']}}
- */
+/* -------------------------------------------------------------------------- */
+/* Cart aside                                                                  */
+/* -------------------------------------------------------------------------- */
+
 function CartAside({cart}) {
   return (
     <Aside type="cart" heading="CART">
-      <Suspense fallback={<p>Loading cart ...</p>}>
+      <Suspense
+        fallback={
+          <p className="px-4 py-6 text-sm text-gray-500">Loading cart…</p>
+        }
+      >
         <Await resolve={cart}>
-          {(cart) => {
-            return <CartMain cart={cart} layout="aside" />;
-          }}
+          {(cart) => <CartMain cart={cart} layout="aside" />}
         </Await>
       </Suspense>
     </Aside>
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* Search aside                                                                */
+/* -------------------------------------------------------------------------- */
+
 function SearchAside() {
   const queriesDatalistId = useId();
+
   return (
     <Aside type="search" heading="SEARCH">
-      <div className="predictive-search">
-        <br />
+      <div className="flex h-full flex-col">
         <SearchFormPredictive>
           {({fetchResults, goToSearch, inputRef}) => (
-            <div className='flex gap-3 px-2 py-10'>
+            <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-4">
               <input
                 name="q"
-                onChange={fetchResults}
-                onFocus={fetchResults}
-                placeholder="Search"
                 ref={inputRef}
                 type="search"
                 list={queriesDatalistId}
-                  className='w-full px-4 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-brand-gray '
+                placeholder="Search products, pages, articles…"
+                onChange={fetchResults}
+                onFocus={fetchResults}
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
               />
-              &nbsp;
-              <button onClick={goToSearch}>Search</button>
+
+              <button
+                onClick={goToSearch}
+                className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                Search
+              </button>
             </div>
           )}
         </SearchFormPredictive>
@@ -91,7 +106,11 @@ function SearchAside() {
             const {articles, collections, pages, products, queries} = items;
 
             if (state === 'loading' && term.current) {
-              return <div>Loading...</div>;
+              return (
+                <p className="px-4 py-6 text-sm text-gray-500">
+                  Searching…
+                </p>
+              );
             }
 
             if (!total) {
@@ -99,43 +118,47 @@ function SearchAside() {
             }
 
             return (
-              <>
+              <div className="flex flex-col gap-4 py-2">
                 <SearchResultsPredictive.Queries
                   queries={queries}
                   queriesDatalistId={queriesDatalistId}
                 />
+
                 <SearchResultsPredictive.Products
                   products={products}
                   closeSearch={closeSearch}
                   term={term}
                 />
+
                 <SearchResultsPredictive.Collections
                   collections={collections}
                   closeSearch={closeSearch}
                   term={term}
                 />
+
                 <SearchResultsPredictive.Pages
                   pages={pages}
                   closeSearch={closeSearch}
                   term={term}
                 />
+
                 <SearchResultsPredictive.Articles
                   articles={articles}
                   closeSearch={closeSearch}
                   term={term}
                 />
+
                 {term.current && total ? (
                   <Link
-                    onClick={closeSearch}
                     to={`${SEARCH_ENDPOINT}?q=${term.current}`}
+                    onClick={closeSearch}
+                    className="mx-4 mb-4 rounded-md border border-gray-200 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                   >
-                    <p>
-                      View all results for <q>{term.current}</q>
-                      &nbsp; →
-                    </p>
+                    View all results for{' '}
+                    <q className="font-semibold">{term.current}</q> →
                   </Link>
                 ) : null}
-              </>
+              </div>
             );
           }}
         </SearchResultsPredictive>
@@ -144,12 +167,10 @@ function SearchAside() {
   );
 }
 
-/**
- * @param {{
- *   header: PageLayoutProps['header'];
- *   publicStoreDomain: PageLayoutProps['publicStoreDomain'];
- * }}
- */
+/* -------------------------------------------------------------------------- */
+/* Mobile menu aside                                                           */
+/* -------------------------------------------------------------------------- */
+
 function MobileMenuAside({header, publicStoreDomain}) {
   return (
     header.menu &&
@@ -175,7 +196,3 @@ function MobileMenuAside({header, publicStoreDomain}) {
  * @property {string} publicStoreDomain
  * @property {React.ReactNode} [children]
  */
-
-/** @typedef {import('storefrontapi.generated').CartApiQueryFragment} CartApiQueryFragment */
-/** @typedef {import('storefrontapi.generated').FooterQuery} FooterQuery */
-/** @typedef {import('storefrontapi.generated').HeaderQuery} HeaderQuery */
