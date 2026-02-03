@@ -1,36 +1,27 @@
 # Nitrofy Store
 
-A web storefront project built with modern JavaScript tooling.  
-This project uses **React**, **Tailwind CSS**, **Vite**, and a server backend to power a storefront experience. The core setup is based on Shopify’s Hydrogen template, adapted for Nitrofy Store.
+A modern Shopify storefront built with **Hydrogen**, **React**, **Tailwind CSS**, and **Vite**.  
+Nitrofy Store provides a fast, flexible foundation for building custom Shopify e-commerce experiences.
 
-## What this project is
+## About
 
-Nitrofy Store is a starter store application that gives you a solid foundation to build an online shop. It includes:
-
-- Frontend UI with React and Tailwind
-- Routing and layout
-- API integration for products and cart
-- Local development server
-- Build and deployment configurations
-
-This repo is a zero-star project with no official release yet. You can customize it to your needs.
+Nitrofy Store is a headless Shopify storefront project built on the **Hydrogen framework**. It gives you a ready-to-use structure for creating responsive, API-driven storefronts with React and Tailwind CSS. You can extend it to handle products, carts, and checkout flows using Shopify’s APIs.
 
 ## Features
 
-- Responsive web UI
+- Responsive storefront UI
 - Product listing and detail pages
-- Cart management
-- API layer ready for commerce data
-- Tailwind CSS for styling
+- Cart management and checkout integration
+- API-ready structure for Shopify data
+- Built with Hydrogen, React, Tailwind CSS, and Vite
 
-## Getting started
+## Prerequisites
 
-### Prerequisites
-
-Make sure you have the following installed:
-
-- Node.js (18 or higher)
+- Node.js v18 or higher
 - npm or yarn
+- A Shopify store and storefront API access
+
+## Getting Started
 
 ### Install dependencies
 
