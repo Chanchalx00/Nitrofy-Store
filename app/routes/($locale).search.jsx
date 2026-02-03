@@ -3,7 +3,13 @@ import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {SearchForm} from '~/components/SearchForm';
 import {SearchResults} from '~/components/SearchResults';
 import {getEmptyPredictiveSearchResult} from '~/lib/search';
-
+import {
+  SearchFormPredictive,
+  SEARCH_ENDPOINT,
+} from '~/components/SearchFormPredictive';
+import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
+import {Suspense, useId} from 'react';
+import {Link} from 'react-router';
 /**
  * @type {MetaFunction}
  */
@@ -34,25 +40,31 @@ export async function loader({request, context}) {
  */
 export default function SearchPage() {
   /** @type {LoaderReturnData} */
-  const {type, term, result, error} = useLoaderData();
-  if (type === 'predictive') return null;
-
+  // const {type, term, result, error} = useLoaderData();
+  // if (type === 'predictive') return null;
+  const queriesDatalistId = useId();
   return (
-    <div className="search">
-      <h1>Search</h1>
-      <SearchForm>
+    <div className=" max-w-6xl mx-auto min-h-screen px-5 py-10">
+      <h1 className="text-3xl font-playfair mt-36">Search</h1>
+      {/* <SearchForm>
         {({inputRef}) => (
-          <>
+          <div className="flex gap-3 py-10">
             <input
               defaultValue={term}
               name="q"
               placeholder="Search…"
               ref={inputRef}
               type="search"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
             />
             &nbsp;
-            <button type="submit">Search</button>
-          </>
+            <button
+              type="submit"
+              className="px-6 py-3 bg-brand-gold font-source text-white rounded-md hover:bg-gray-800 transition active:scale-95"
+            >
+              Search
+            </button>
+          </div>
         )}
       </SearchForm>
       {error && <p style={{color: 'red'}}>{error}</p>}
@@ -69,7 +81,79 @@ export default function SearchPage() {
           )}
         </SearchResults>
       )}
-      <Analytics.SearchView data={{searchTerm: term, searchResults: result}} />
+      <Analytics.SearchView data={{searchTerm: term, searchResults: result}} /> */}
+      <SearchFormPredictive>
+        {({fetchResults, goToSearch, inputRef}) => (
+          <div className='flex gap-3 py-10'>
+            <input
+              name=""
+              onChange={fetchResults}
+              onFocus={fetchResults}
+              placeholder="Search"
+              ref={inputRef}
+              
+              list={queriesDatalistId}
+              className='w-full px-4 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-brand-gray '
+            />
+            &nbsp;
+            <button onClick={goToSearch} className='px-6 py-3 bg-brand-gold font-source text-white rounded-md hover:bg-black transition active:scale-95'>Search</button>
+          </div>
+        )}
+      </SearchFormPredictive>
+
+      <SearchResultsPredictive>
+        {({items, total, term, state, closeSearch}) => {
+          const {articles, collections, pages, products, queries} = items;
+
+          if (state === 'loading' && term.current) {
+            return <div className='font-source'>Loading...</div>;
+          }
+
+          if (!total) {
+            return <SearchResultsPredictive.Empty term={term} />;
+          }
+
+          return (
+            <div className='font-source'>
+              <SearchResultsPredictive.Queries
+                queries={queries}
+                queriesDatalistId={queriesDatalistId}
+              />
+              <SearchResultsPredictive.Products
+                products={products}
+                closeSearch={closeSearch}
+                term={term}
+              />
+              <SearchResultsPredictive.Collections
+                collections={collections}
+                closeSearch={closeSearch}
+                term={term}
+              />
+              <SearchResultsPredictive.Pages
+                pages={pages}
+                closeSearch={closeSearch}
+                term={term}
+              />
+              <SearchResultsPredictive.Articles
+                articles={articles}
+                closeSearch={closeSearch}
+                term={term}
+              />
+              {term.current && total ? (
+                <Link
+                  onClick={closeSearch}
+                  to={`${SEARCH_ENDPOINT}?q=${term.current}`}
+                >
+                  <p className='font-playfair'>
+                    View all results for <q>{term.current}</q>
+                    &nbsp; →
+                  </p>
+                </Link>
+              ) : null}
+            </div>
+          );
+        }}
+      </SearchResultsPredictive>
     </div>
   );
 }

@@ -69,7 +69,7 @@ function SearchAside() {
         <br />
         <SearchFormPredictive>
           {({fetchResults, goToSearch, inputRef}) => (
-            <>
+            <div className='flex gap-3 px-2 py-10'>
               <input
                 name="q"
                 onChange={fetchResults}
@@ -78,10 +78,11 @@ function SearchAside() {
                 ref={inputRef}
                 type="search"
                 list={queriesDatalistId}
+                  className='w-full px-4 py-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-1 focus:ring-brand-gray '
               />
               &nbsp;
               <button onClick={goToSearch}>Search</button>
-            </>
+            </div>
           )}
         </SearchFormPredictive>
 
